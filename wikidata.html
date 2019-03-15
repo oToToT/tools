@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta charset="UTF-8">
+        <title>Wikidata Process</title>
+
+        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/tocas-ui/2.3.3/tocas.css'>
+
+    </head>
+
+    <body>
+
+
+        <div class="ts fluid container">
+            <div class="ts slate">
+                <div class="ts narrow container">
+                    <h1 class="ts header">寫點程式吧！
+                        <div class="ts sub header">meow, meow, meow</div>
+                    </h1>
+                </div>
+            </div>
+            <div class="ts container">
+                <div class="ts very padded basic segment">
+                    <div class="ts form">
+                        <div class="fields">
+                            <div class="field">
+                                <label>Section</label>
+                                <input class="text" id="inputSection" value="卷六"/>
+                            </div>
+                            <div class="field">
+                                <label>Author</label>
+                                <input class="text" id="inputAuthor" value="徐熥"/>
+                            </div>
+                            <div class="field">
+                                <label>Times</label>
+                                <input class="text" id="inputTimes" value="明"/>
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>Type</label>
+                                <input class="text" id="inputType" value="六言絕句"/>
+                            </div>
+                            <div class="field">
+                                <label>From</label>
+                                <input class="text" id="inputFrom" value="幔亭集 (四庫全書本)/卷12"/>
+                            </div>
+                            <div class="field">
+                                <label>From2</label>
+                                <input class="text" id="inputFrom2" value="幔亭集/卷12"/>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Category</label>
+                            <input class="text" id="inputCategory" value="{{明朝作品}}[[Category:明詩]]"/>
+                        </div>
+                        <div class="field">
+                            <label>Main</label>
+                            <textarea rows="16" id="inputData"> 　　{{SK anchor|吳城覽古}}
+　　白雲猶繞舊王居獨對西風恨有餘百戰山河歸草莽千年陵寝總丘墟月明茂苑遊麋鹿花暗荒城弔闔廬况是異鄉多病客豈堪唫眺暫躊躇
+　　{{SK anchor|古意}}
+　　一天秋色露華清獨倚妝臺別恨生錦字緘愁過薊水寒衣將淚到遼城夢廻萬里金微路腸斷三更玉篴聲起視明河人不見朔雲邊月總關情
+　　{{SK anchor|塞下曲}}
+　　沙磧風髙敵騎侵將軍新戰賀蘭隂塞霜曉角降王淚漢月秋笳壯士心刀上洗瘢青血冷營前望氣白光沉旄頭未落邊烽急腸斷空閨戍婦碪</textarea>
+                        </div>
+                        <button class="ts button" id="generate">生成</button>
+                    </div>
+                    <div class="ts modals dimmer">
+                        <dialog class="ts fullscreen closable modal" id="outputModal">
+                            <div class="header">輸出</div>
+                            <div class="content">
+                                <div class="ts form">
+                                    <div class="field">
+                                        <textarea rows="15" readonly="readonly" id="output">製作中QQ</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="ts deny button">關閉</button>
+                            </div>
+                        </dialog>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/tocas-ui/2.3.3/tocas.js'></script>
+
+
+
+        <script id="rendered-js" >
+            $(function () {
+  $("#generate").click(function () {
+    const data = $("#inputData").val().split("\n");
+    let processed = [],ps = "";
+    for (let s of data) {
+      s = s.trim();
+      if (s[0] == '{') {
+        s = s.replace("{", "");
+        s = s.replace("{", "");
+        s = s.replace("}", "");
+        s = s.replace("}", "");
+        const title = s.split("|")[1];
+        if (processed.length) {
+          processed[processed.length - 1].next = title;
+        }
+        processed.push({ title: title, prev: ps });
+        ps = title;
+      } else {
+        if (processed.length) {
+          processed[processed.length - 1].text = s;
+        }
+      }
+    }
+
+    let result = "";
+    for (let obj of processed) {
+      result += `{{header
+| title    = ${obj.title}
+| section  = ${$("#inputSection").val()}
+| author   = ${$("#inputAuthor").val()}
+| times    = ${$("#inputTimes").val()}
+| type     = ${$("#inputType").val()}
+| previous = ${obj.prev ? "[[" + obj.prev + "|" + obj.prev + "]]" : ""}
+| next     = ${obj.next ? "[[" + obj.next + "|" + obj.next + "]]" : ""}
+| from     = ${$("#inputFrom").val()}
+| from2    = ${$("#inputFrom2").val()}
+| notes    = {{Textquality|50%}}
+}}
+&lt;onlyinclude&gt;&lt;poem&gt;
+${obj.text}
+&lt;/poem&gt;&lt;/onlyinclude&gt;
+${$("#inputCategory").val()}
+
+`;
+    }
+    $("#output").html(result);
+    ts("#outputModal").modal("show");
+  });
+});
+        </script>
+
+    </body>
+
+</html>
+
+

@@ -106,11 +106,11 @@
         if (processed.length) {
           processed[processed.length - 1].next = title;
         }
-        processed.push({ title: title, prev: ps });
+        processed.push({ title: title, prev: ps, text: '' });
         ps = title;
       } else {
         if (processed.length) {
-          processed[processed.length - 1].text = s;
+          processed[processed.length - 1].text += s + '\n';
         }
       }
     }

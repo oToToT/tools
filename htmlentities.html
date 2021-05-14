@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta charset="UTF-8">
+        <title>HTML Encoder/Decoder</title>
+        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/tocas-ui/2.3.3/tocas.css'>
+    </head>
+    <body>
+        <div class="ts fluid container">
+            <div class="ts slate">
+                <div class="ts narrow container">
+                    <h2 class="ts header">HTML Encoder / Decoder</h2>
+                </div>
+            </div>
+            <div class="ts container">
+                <div class="ts very padded basic segment">
+                    <div class="ts form">
+                        <div class="fields">
+                            <div class="resizeble field">
+                                <label><h3 class="ts header">Decoded</h3></label>
+                                <textarea rows="20" id="decoded"></textarea>
+                            </div>
+                            <div class="resizable field">
+                                <label><h3 class="ts header">Encoded</h3></label>
+                                <textarea rows="20" id="encoded"></textarea>
+                            </div>
+                        </div>
+                        <div class="ts buttons">
+                            <button class="ts primary button" id="encode">Encode</button>
+                            <div class="or" data-text="Or"></div>
+                            <button class="ts positive button" id="decode">Decode</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+<script>
+window.addEventListener("load", function() {
+    document.getElementById("encode").addEventListener("click", function() {
+        let decoded = document.getElementById("decoded").value;
+
+        // from https://github.com/angular/angular.js/blob/v1.8.2/src/ngSanitize/sanitize.js#L562
+        const SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+        // Match everything outside of normal chars and " (quote character)
+        const NON_ALPHANUMERIC_REGEXP = /([^#-~ |!])/g;
+        
+        let encoded = decoded.
+            replace(/&/g, '&amp;').
+            replace(SURROGATE_PAIR_REGEXP, function(value) {
+                const hi = value.charCodeAt(0);
+                const low = value.charCodeAt(1);
+                return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+            }).
+            replace(NON_ALPHANUMERIC_REGEXP, function(value) {
+                return '&#' + value.charCodeAt(0) + ';';
+            }).
+            replace(/</g, '&lt;').
+            replace(/>/g, '&gt;');
+        
+        document.getElementById("encoded").value = encoded;
+    });
+    document.getElementById("decode").addEventListener("click", function() {
+        let encoded = document.getElementById("encoded").value;
+        // would it be vulnerable to XSS?
+        document.getElementById("decoded").innerHTML = encoded;
+    });
+});
+</script>
+</html>

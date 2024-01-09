@@ -64,7 +64,9 @@ window.addEventListener("load", function() {
     document.getElementById("decode").addEventListener("click", function() {
         let encoded = document.getElementById("encoded").value;
         // would it be vulnerable to XSS?
-        document.getElementById("decoded").innerHTML = encoded;
+        let div = document.createElement('div');
+        div.innerHTML = encoded;
+        document.getElementById("decoded").value = div.innerText;
     });
 });
 </script>

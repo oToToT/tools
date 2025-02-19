@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background-color: black;
+      }
+
+      .container {
+        font-size: 0;
+        height: 100%;
+      }
+
+      .main {
+        display: inline-block;
+        vertical-align: top;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: auto;
+      }
+
+      video {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+
+      .float {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        color: white;
+        background-color: black;
+      }
+    </style>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const frameSize = {
+        qqvga: { width: 160, height: 90 },
+        "90p": { width: 160, height: 90 },
+        qhvga: { width: 240, height: 135 },
+        "135p": { width: 240, height: 135 },
+        qvga: { width: 320, height: 180 },
+        "180p": { width: 320, height: 180 },
+        hvga: { width: 480, height: 270 },
+        "270p": { width: 480, height: 270 },
+        vga: { width: 640, height: 360 },
+        "360p": { width: 640, height: 360 },
+        hhd: { width: 960, height: 540 },
+        "540p": { width: 960, height: 540 },
+        hd: { width: 1280, height: 720 },
+        "720p": { width: 1280, height: 720 },
+        fhd: { width: 1920, height: 1080 },
+        "1080p": { width: 1920, height: 1080 },
+        qhd: { width: 2560, height: 1440 },
+        "1440p": { width: 2560, height: 1440 },
+        uhd: { width: 3840, height: 2160 },
+        "4k": { width: 3840, height: 2160 },
+        "2160p": { width: 3840, height: 2160 },
+      };
+      const mimeType = {
+        h264: "video/webm; codecs=h264",
+        vp8: "video/webm; codecs=vp8",
+        vp9: "video/webm; codecs=vp9",
+        av1: "video/webm; codecs=avc1",
+      };
+
+      var gResolution = urlParams.get("resolution") || "720p";
+      var gFrameRate = urlParams.get("frameRate") || 30;
+      var gCodec = urlParams.get("codec") || "vp9";
+      var gMediaRecorder;
+      var gInterval;
+      var gWidth;
+      var gHeight;
+
+      async function startRecord() {
+        try {
+            gWidth = frameSize[gResolution]["width"];
+            gHeight = frameSize[gResolution]["height"];
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+              video: {
+                width: gWidth,
+                height: gHeight,
+                frameRate: gFrameRate,
+              },
+            });
+            document.getElementById("camera").srcObject = stream;
+            gMediaRecorder = new MediaRecorder(stream, {
+              mimeType: mimeType[gCodec],
+            });
+
+            updateInfo(gCodec, 0);
+            gMediaRecorder.ondataavailable = processBlobData;
+            gMediaRecorder.start();
+            gInterval = setInterval(clearRecordData, 1000);
+        } catch (e) {
+            alert(1);
+        }
+      }
+
+      function updateInfo(codec, bitrate) {
+        var text =
+          "" +
+          `codec: ${codec} ` +
+          `resolution: ${gWidth}x${gHeight} ` +
+          `frameRate: ${gFrameRate} `;
+        if (bitrate > 0) {
+          text += `bitRate: ${Math.round(bitrate / 128)} kbps `;
+        }
+        document.getElementById("info").innerText = text;
+      }
+
+      function clearRecordData() {
+        gMediaRecorder.requestData();
+      }
+
+      function processBlobData(blob) {
+        updateInfo(blob.data.type, blob.data.size);
+      }
+
+      function changeFormat(codec, resolution, frameRate) {
+        gMediaRecorder.stream.getVideoTracks()[0].stop();
+        gMediaRecorder.stop();
+        gCodec = codec || "vp9";
+        gResolution = resolution || "720p";
+        gFrameRate = frameRate || 30;
+        clearInterval(gInterval);
+        startRecord();
+      }
+    </script>
+  </head>
+
+  <body onLoad="startRecord()">
+    <div class="container">
+      <div class="main">
+        <video id="camera" autoplay muted controls></video>
+      </div>
+    </div>
+    <div class="float" id="info"></div>
+  </body>
+</html>
